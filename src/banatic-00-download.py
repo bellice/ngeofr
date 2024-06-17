@@ -31,7 +31,7 @@ def download_banatic(url_base, zones, dossier_destination="./src/params/banatic/
     """
     Télécharge les fichiers CSV depuis Banatic pour les zones spécifiées, les convertit en UTF-8 et les sauvegarde.
     """
-    format_to_filename = {
+    FORMAT_TO_FILENAME = {
         "A": "liste-groupement",
         "B": "coordonnees-groupement",
         "C": "competences-groupement",
@@ -39,15 +39,15 @@ def download_banatic(url_base, zones, dossier_destination="./src/params/banatic/
         "E": "perimetre-epci-fp"
     }
     
-    formats = ["A", "B", "C", "D", "E"]
+    FORMATS = ["A", "B", "C", "D", "E"]
     
     for zone in zones:
-        for format in formats:
+        for format in FORMATS:
             url = f"{url_base}&zone={zone}&format={format}"
             print(f"Tentative de téléchargement pour la zone {zone} et le format {format} : {url}")
             
             department, date = extract_department_and_date(url)
-            nom_fichier_base = format_to_filename.get(format, "fichier-inconnu")
+            nom_fichier_base = FORMAT_TO_FILENAME.get(format, "fichier-inconnu")
             
             if department == "D2":
                 department = zone  # Utilise directement la zone D2A ou D2B comme nom de département
