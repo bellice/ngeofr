@@ -27,7 +27,7 @@ def file_exists_in_directory(file_path):
     """
     return os.path.exists(file_path)
 
-def download_banatic(url_base, zones, path_output="./src/params/banatic/"):
+def download_banatic(url_base, zones, path_output="./src/assets/banatic/"):
     """
     Télécharge les fichiers CSV depuis Banatic pour les zones spécifiées, les convertit en UTF-8 et les sauvegarde.
     """

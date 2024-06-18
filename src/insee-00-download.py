@@ -125,7 +125,7 @@ def download_files_from_url(path_url, pattern, path_output):
                 print(f"Erreur inconnue : {exc}")
 
 # Chemin de sortie
-path_output = Path("./src/params/insee/")
+path_output = Path("./src/assets/insee/")
 path_output.mkdir(parents=True, exist_ok=True)  # Création du répertoire si nécessaire
 
 # Définition des URLs et patterns pour les téléchargements
@@ -141,7 +141,7 @@ path_output.mkdir(parents=True, exist_ok=True)  # Création du répertoire si n�
 # Population Nouvelle-Calédonie
 # Population Polynésie française
 # Population Wallis et Futuna
-# Codification outremer
+# Codification outremer (n'existe plus sur Insee, à faire soi-même)
 # Table de passage des communes
 # Table d'appartenance géographique des communes
 # Communes nouvelles
