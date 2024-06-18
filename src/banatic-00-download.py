@@ -2,7 +2,7 @@ import os
 import requests
 import chardet
 from dotenv import load_dotenv
-from requests.exceptions import ProxyError, RequestException, HTTPError, ConnectionError, Timeout
+from requests.exceptions import ProxyError, RequestException, HTTPError, Timeout
 import re
 
 # Charger les variables d'environnement depuis le fichier .env
@@ -27,7 +27,7 @@ def file_exists_in_directory(file_path):
     """
     return os.path.exists(file_path)
 
-def download_banatic(url_base, zones, dossier_destination="./src/params/banatic/"):
+def download_banatic(url_base, zones, path_output="./src/params/banatic/"):
     """
     Télécharge les fichiers CSV depuis Banatic pour les zones spécifiées, les convertit en UTF-8 et les sauvegarde.
     """
@@ -47,16 +47,16 @@ def download_banatic(url_base, zones, dossier_destination="./src/params/banatic/
             print(f"Tentative de téléchargement pour la zone {zone} et le format {format} : {url}")
             
             department, date = extract_department_and_date(url)
-            nom_fichier_base = format_to_filename.get(format, "fichier-inconnu")
+            filename_base = format_to_filename.get(format, "fichier-inconnu")
             
             if department == "D2":
                 department = zone  # Utilise directement la zone D2A ou D2B comme nom de département
             
-            nom_fichier = f"{department}-{date}-{nom_fichier_base}.csv"
-            chemin_complet = os.path.join(dossier_destination, nom_fichier)
+            filename = f"{department}-{date}-{filename_base}.csv"
+            chemin_complet = os.path.join(path_output, filename)
             
             if file_exists_in_directory(chemin_complet):
-                print(f"Le fichier {nom_fichier} existe déjà. Téléchargement ignoré.")
+                print(f"Le fichier {filename} existe déjà. Téléchargement ignoré.")
                 continue
             
             proxy = os.getenv("PROXY_URL")
