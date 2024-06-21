@@ -32,3 +32,4 @@ for file in files_filtered:
             logging.info(f"{file.name} a été extrait dans {path}.")
     except Exception as e:
         logging.error(f"Erreur lors de la décompression de {file.name}: {e}")
+
