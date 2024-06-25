@@ -28,3 +28,23 @@ try:
 except requests.exceptions.RequestException as e:
     print(f"Erreur lors de la requête: {e}")
 
+
+
+## Exploration des données 
+
+# Voir les premières lignes
+df.head()
+
+# Dimension (ligne x colonne)
+df.shape
+
+# Type de données
+df.dtypes
+
+df.info()
+
+# Valeur nulle
+df.isnull().sum()
+
+# Colonne
+df.columns
