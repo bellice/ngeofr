@@ -21,7 +21,7 @@ library(lubridate)
 #                             sheet = 3, skip = 5)
 
 # Type d'événement sur les communes
-mvtcom_init <- read.csv(here("src/assets/insee/2023/cog_ensemble_2023_csv/v_mvtcommune_2023.csv"),
+mvtcom_init <- read.csv(here("src/assets/insee/v_mvtcommune_2024.csv"),
                         encoding = "UTF-8", na.strings = "")
 
 # Intervalle temporelle des communes
