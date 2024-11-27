@@ -1,0 +1,30 @@
+
+
+- table epci banatic
+- créer un script de chaque pour :
+    1/ competence groupement
+    2/ coordonnes groupement
+    3/ liste groupement
+    4/ perimetre epci fp
+
+- revoir sous d'indentation sur script
+insee-00-extract.py
+insee-10-table-com.py
+
+
+
+filtrer par grpt_naturejuridique avec les valeurs suivantes :
+METRO, CC, CA, CU, MET69, EPT
+
+- créer un script pour télécharger la table de correspondance code SIREN / Code Insee des communes sur Banatic
+
+
+insee_com, siren_com, lib_com
+siren_epci, lib_epci, type_epci
+siren_ept, lib_ept
+insee_arm, lib_arm, cheflieu_arm
+insee_dep, lib_dep, cheflieu_dep
+insee_reg, lib_reg, cheflieu_reg
+
+quid des arm ? ajouter type_com ? pour différencier COM et ARM
+plus tard ajouter les collectivités d'outremer
