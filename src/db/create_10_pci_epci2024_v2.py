@@ -10,11 +10,28 @@ path_input = Path("D:/ign/parcellaire-express/parquet/dep")
 path_output = Path("D:/ign/parcellaire-express/parquet/epci")
 version = "2024-07"
 
-path_db = 'O:/Document/carto-engine/ngeofr/src/_db/ngeo2024.duckdb'
+base_path = Path.cwd()  # Donne le chemin absolu du répertoire courant
+path_db = base_path / "src" / "db" / "ngeo2024.duckdb"
+path_sql = base_path / "src" / "shared" / "query_epci_ept.sql"
+
+# Chemin du fichier d'erreurs unique
+error_combined_path = path_output / "error_missing_combined.csv"
+
+# Fonction pour ajouter les erreurs au fichier CSV unique
+def append_error_to_csv_combined(error_df, file_path):
+    if not file_path.exists():  # Si le fichier n'existe pas, créer un nouveau fichier
+        error_df.to_csv(file_path, index=False, encoding="utf-8")
+    else:  # Sinon, ajouter les nouvelles lignes au fichier existant
+        error_df.to_csv(file_path, index=False, mode='a', header=False, encoding="utf-8")
+
+
+# Afficher le chemin
+print(f"Chemin absolu vers la base de données : {path_sql}")
+
 print(os.path.exists(path_db))
 
-# Créer la connexion
-db_ngeofr = duckdb.connect(path_db)
+# Créer la connexion    
+db_ngeofr = duckdb.connect(str(path_db))
 
 # Vérifiez les bases de données attachées
 db_ngeofr.execute("PRAGMA show_databases;").fetchall() # Cela devrait inclure 'ngeofr' si l'attachement a réussi
@@ -22,11 +39,20 @@ db_ngeofr.execute("PRAGMA show_databases;").fetchall() # Cela devrait inclure 'n
 db_ngeofr.execute("SHOW TABLES;").fetchall()
 db_ngeofr.execute("SHOW ALL TABLES;").fetchall()
 
-# Récupérer la liste des EPCI et des départements et communes associés (dep_insee) dans ngeofr
-epci = db_ngeofr.execute("""
-SELECT DISTINCT epci_siren, epci_nom, com_nom, com_insee, dep_insee
-FROM ngeofr
-""").fetchdf()
+# Récupérer la liste des EPCI/EPT et des départements et communes associés (dep_insee) dans ngeofr
+
+with path_sql.open("r", encoding="utf-8") as file:
+    sql_query = file.read()
+
+epci_com = db_ngeofr.execute(sql_query).fetchdf()
+epci = epci_com.groupby(['epci_siren', 'epci_nom']).agg(
+    dep_insee=('dep_insee', lambda x: ','.join(sorted(set(x))))  # Concaténer les départements uniques
+).reset_index()
+
+#epci = db_ngeofr.execute("""
+#SELECT DISTINCT epci_siren, epci_nom, com_nom, com_insee, dep_insee
+#FROM ngeofr
+#""").fetchdf()
 
 # Utiliser un générateur pour lister les fichiers existants et extraire les epci_siren
 epci_done = {
@@ -34,14 +60,9 @@ epci_done = {
 }
 
 # Filtrer les EPCI non encore exportés
-epci_todo = epci[~epci['epci_siren'].isin(epci_done)]
+epci_todo = epci[~epci["epci_siren"].isin(epci_done)]
 
-# Pour chaque EPCI, charger uniquement les fichiers des départements nécessaires
-epci_test = epci_todo.head(1)  # Limite à 1 ligne*
-
-print(epci_test)
-
-for index, row in epci_test.iterrows():
+for index, row in epci_todo.iterrows():
     epci_siren = row['epci_siren']
     epci_nom = row['epci_nom']
     dep_insee = row['dep_insee']  # Ceci est le ou les départements associés à l'EPCI
@@ -73,12 +94,12 @@ for index, row in epci_test.iterrows():
             FROM read_parquet('{parquet_files[0]}')  -- Charger le fichier Parquet
             """)
 
-    # Vérifiation de la projection
+    # Vérification de la projection
     # Ouvrir un fichier sans lire les données
     epsg  = gpd.read_parquet(parquet_files[0]).crs.to_string()
 
     # Vérification de la géométrie
-    db.execute(f"""PRAGMA table_info('pci_{epci_siren}')""").fetchall()
+    #db.execute(f"""PRAGMA table_info('pci_{epci_siren}')""").fetchall()
 
     # Vérification des correspondances com_insee
     ngeofr_com_insee = db_ngeofr.execute(f"""
@@ -107,14 +128,10 @@ for index, row in epci_test.iterrows():
         # Effectuer la jointure ici
 
         com_insee_list = (
-            db_ngeofr.execute(f"""
-                SELECT DISTINCT com_insee 
-                FROM ngeofr 
-                WHERE epci_siren LIKE '{epci_siren}'
-            """)
-            .fetchdf()  # Récupérer le DataFrame
-            .pipe(lambda x: x.sort_values(by="com_insee"))   # Trier par la colonne
-            .pipe(lambda df: df['com_insee'].tolist())  # Extraire la colonne 'com_insee' en liste
+            epci_com[epci_com['epci_siren'] == epci_siren]  # Filtrer par epci_siren
+            .drop_duplicates(subset='com_insee')  # Supprimer les doublons
+            .sort_values(by='com_insee')  # Trier par la colonne 'com_insee'
+            ['com_insee'].tolist()  # Extraire la colonne 'com_insee' en liste
         )
 
         # Effectuer la jointure avec ngeofr pour rapatrier epci_siren et epci_nom
@@ -122,14 +139,14 @@ for index, row in epci_test.iterrows():
             DROP VIEW IF EXISTS pci_joint_{epci_siren};  -- Supprimer la vue existante avant de la recréer
 
             CREATE VIEW pci_joint_{epci_siren} AS
-            SELECT
+            SELECT DISTINCT
                 pci_{epci_siren}.IDU AS pci_id,                  -- Renommer IDU en pci_id
                 pci_{epci_siren}.CODE_DEP || pci_{epci_siren}.CODE_COM AS com_insee,  -- Concaténation CODE_DEP et CODE_COM en com_insee
-                pci_{epci_siren}.NOM_COM AS com_nom,               -- Renommer NOM_COM en com_nom
                 pci_{epci_siren}.COM_ABS AS com_abs,               -- Renommer COM_ABS en com_abs
                 pci_{epci_siren}.SECTION AS pci_section,           -- Renommer SECTION en pci_section
                 pci_{epci_siren}.NUMERO AS pci_num,                -- Renommer NUMERO en pci_nom
                 pci_{epci_siren}.CONTENANCE AS pci_surface,        -- Renommer CONTENANCE en pci_surface
+                pci_{epci_siren}.NOM_COM AS com_nom,               -- Renommer NOM_COM en com_nom
                 '{epci_siren}' AS epci_siren,                      -- Ajouter epci_siren
                 '{epci_nom.replace("'", "''")}' AS epci_nom,       -- Ajouter epci_nom en échappant les apostrophes
             ST_GeomFromWKB(pci_{epci_siren}.geometry) AS geometry  -- Conversion du BLOB en GEOMETRY puis en WKT
@@ -148,22 +165,39 @@ for index, row in epci_test.iterrows():
         """)
         print(f"Export terminé pour EPCI {epci_siren}")
 
+
+        # Lire le fichier Parquet, convertir la géométrie, et ajouter le CRS en une seule chaîne
+        df = (
+            pd.read_parquet(output_path_str)  # Lire le fichier Parquet
+            .pipe(lambda x: x.assign(geometry=gpd.GeoSeries.from_wkb(x['geometry'])))  # Convertir WKB en géométrie
+            .pipe(lambda x: gpd.GeoDataFrame(x, geometry='geometry'))  # Convertir en GeoDataFrame
+            .pipe(lambda x: x.set_crs(epsg, allow_override=True))  # Ajouter le CRS (par exemple, EPSG:4326)
+        )
+
+        # Exporter le GeoDataFrame en GeoParquet
+        df.to_parquet(output_path_str, compression='gzip', engine='pyarrow')
+        print(f"Export terminé pour EPCI {epci_siren} en format GeoParquet")
+
+        db.close()
+
+
     else:
         print(f"Validation échouée pour EPCI {epci_siren}. Communes manquantes détectées.")
+
+        # Ajouter la colonne 'epci_siren' et 'missing' aux DataFrames d'erreurs
+        missing_in_ngeofr = missing_in_ngeofr.assign(
+            epci_siren=epci_siren, missing="in_ngeofr"
+        )
+
+        missing_in_pci = missing_in_pci.assign(
+            epci_siren=epci_siren, missing="in_pci"
+        )
+
+        # Fusionner les deux DataFrames d'erreurs
+        combined_errors = pd.concat([missing_in_ngeofr, missing_in_pci])
+
+        # Ajouter les erreurs au fichier CSV unique
+        append_error_to_csv_combined(combined_errors, error_combined_path)
+
         print("Communes absentes dans ngeofr :", missing_in_ngeofr)
         print("Communes absentes dans pci :", missing_in_pci)
-
-
-# Lire le fichier Parquet, convertir la géométrie, et ajouter le CRS en une seule chaîne
-df = (
-    pd.read_parquet(output_path_str)  # Lire le fichier Parquet
-    .pipe(lambda x: x.assign(geometry=gpd.GeoSeries.from_wkb(x['geometry'])))  # Convertir WKB en géométrie
-    .pipe(lambda x: gpd.GeoDataFrame(x, geometry='geometry'))  # Convertir en GeoDataFrame
-    .pipe(lambda x: x.set_crs(epsg, allow_override=True))  # Ajouter le CRS (par exemple, EPSG:4326)
-)
-
-# Exporter le GeoDataFrame en GeoParquet
-df.to_parquet(output_path_str, compression='gzip', engine='pyarrow')
-print(f"Export terminé pour EPCI {epci_siren} en format GeoParquet")
-
-db.close()
