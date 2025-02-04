@@ -4,7 +4,7 @@ import shutil
 import os
 
 # Connexion à une base de données DuckDB (crée la base si elle n"existe pas)
-conn = duckdb.connect("src/_db/ngeo2024.duckdb")
+conn = duckdb.connect("src/db/ngeo2024.duckdb")
 
 # Ordre des colonnes
 column_order = [
@@ -94,12 +94,20 @@ conn.execute("VACUUM")
 # Fermer la connexion
 conn.close()
 
+# Exportation des données en .parquet
+df_vf.to_parquet(
+    path = "src/db/ngeo2024.parquet",
+    compression = "gzip")
+
+
+
 # Copie du fichier
-source_file = "src/_db/ngeo2024.duckdb"
+files_to_copy = ["src/db/ngeo2024.duckdb", "src/db/ngeo2024.parquet"]
 destination_directory = "public/"
 destination_file = os.path.join(destination_directory, os.path.basename(source_file))
 
-# Copier le fichier
-shutil.copy(source_file, destination_file)
-
-print(f"Fichier copié vers {destination_file}")
+# Copier les fichiers
+for file in files_to_copy:
+    destination_file = os.path.join(destination_directory, os.path.basename(file))
+    shutil.copy(file, destination_file)
+    print(f"Fichier copié : {file} → {destination_file}")
