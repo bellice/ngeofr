@@ -47,7 +47,7 @@ try:
 
 # ---- 5 Écriture au format Parquet ----
 
-    df.to_parquet("src/params/insee/table_com.parquet", engine = "pyarrow", compression="gzip")
+    df.to_parquet("src/data/insee/table_com.parquet", engine = "pyarrow", compression="gzip")
     print("Les fichiers ont été écrits avec succès.")
 
 except ValueError as e:

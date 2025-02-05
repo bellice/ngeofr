@@ -17,38 +17,38 @@ column_order = [
 ]
 
 
-com_siren_to_insee = pd.read_parquet("src/params/banatic/table_com_siren.parquet").set_index("com_siren")["com_insee"]
+com_siren_to_insee = pd.read_parquet("src/data/banatic/table_com_siren.parquet").set_index("com_siren")["com_insee"]
 
 df = (
-    pd.read_parquet("src/params/insee/table_com.parquet")  # table com
+    pd.read_parquet("src/data/insee/table_com.parquet")  # table com
     .drop(columns=["com_parent"])
     .query("com_type == 'COM'")
     .merge(
-        pd.read_parquet("src/params/insee/table_arr.parquet")  # table arr
+        pd.read_parquet("src/data/insee/table_arr.parquet")  # table arr
         .drop(columns=["dep_insee", "reg_insee"]),
         how="left", on="arr_insee"
     )
     .merge(
-        pd.read_parquet("src/params/insee/table_dep.parquet")  # table dep
+        pd.read_parquet("src/data/insee/table_dep.parquet")  # table dep
         .drop(columns=["reg_insee"]),
         how="left", on="dep_insee"
     )
     .merge(
-        pd.read_parquet("src/params/insee/table_reg.parquet"),  # table reg
+        pd.read_parquet("src/data/insee/table_reg.parquet"),  # table reg
         how="left", on="reg_insee"
     )
     .merge(
-        pd.read_parquet("src/params/banatic/table_com_siren.parquet")  # table insee/siren
+        pd.read_parquet("src/data/banatic/table_com_siren.parquet")  # table insee/siren
         .drop(columns=["com_nom"]),
         how="left", on="com_insee"
     )
     .merge(
-        pd.read_parquet("src/params/banatic/table_epci_perimetre.parquet")  # table epci
+        pd.read_parquet("src/data/banatic/table_epci_perimetre.parquet")  # table epci
         .drop(columns=["epci_membre_nom"]),
         how="left", left_on="com_siren", right_on="epci_membre_siren"
     )
     .merge(
-        pd.read_parquet("src/params/banatic/table_ept_perimetre.parquet")  # table ept
+        pd.read_parquet("src/data/banatic/table_ept_perimetre.parquet")  # table ept
         .drop(columns=["ept_membre_nom"]),
         how="left", left_on="com_siren", right_on="ept_membre_siren"
     )
@@ -60,7 +60,7 @@ df.shape
 df.dtypes
 
 
-#df.to_parquet("src/params/table_test.parquet", engine="pyarrow", compression="gzip")
+#df.to_parquet("src/data/table_test.parquet", engine="pyarrow", compression="gzip")
 
 # Au 1er janvier il y a 34 935 communes
 
