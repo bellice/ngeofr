@@ -2,7 +2,7 @@
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![DuckDB](https://img.shields.io/badge/DuckDB-%E2%9C%94-brightgreen)
 ![Apache Parquet](https://img.shields.io/badge/Apache%20Parquet-%E2%9C%94-brightgreen)
-![GitHub license](https://img.shields.io/github/license/bellice/ngeofr)
+![MIT License](https://img.shields.io/badge/License-MIT-green)
 
 # ngeofr
 
