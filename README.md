@@ -1,5 +1,4 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/bellice/ngeofr)
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![DuckDB](https://img.shields.io/badge/DuckDB-%E2%9C%94-brightgreen)
 ![Apache Parquet](https://img.shields.io/badge/Apache%20Parquet-%E2%9C%94-brightgreen)
 ![MIT License](https://img.shields.io/badge/License-MIT-green)
