@@ -1,16 +1,13 @@
-![GitHub last commit](https://img.shields.io/github/last-commit/bellice/ngeofr)
-![DuckDB](https://img.shields.io/badge/DuckDB-%E2%9C%94-brightgreen)
-![Apache Parquet](https://img.shields.io/badge/Apache%20Parquet-%E2%9C%94-brightgreen)
-![MIT License](https://img.shields.io/badge/License-MIT-green)
-
 # ngeofr
 
 ## Description
-**ngeofr** est un référentiel de données géographiques à l'échelle communale, basé sur le Code officiel géographique en vigueur. Ce projet permet de centraliser et de structurer des données géographiques provenant de sources officielles pour faciliter leur utilisation dans des analyses, des visualisations ou des applications.
+**ngeofr** est un référentiel de données géographiques à l'échelle communale, basé sur le Code officiel géographique (COG) en vigueur. Ce projet permet de centraliser et de structurer des données géographiques provenant de sources officielles pour faciliter leur utilisation dans des analyses, des visualisations ou des applications.
 
-### Public cible
-- Développeurs et data scientists cherchant des données géographiques fiables, légères et performantes pour des intégrations efficaces dans des applications et analyses.
-- Utilisateurs nécessitant des bases de données géographiques performantes avec une faible empreinte mémoire et optimisées pour des traitements rapides.
+## Statut des millésimes du COG
+
+
+![COG 2025](https://img.shields.io/badge/COG%202025-🔄%20En%20cours-orange)
+![COG 2024](https://img.shields.io/badge/COG%202024-✅%20Disponible-brightgreen)
 
 ## Table des matières
 - [Installation](#installation)
@@ -38,7 +35,7 @@ Pour utiliser la base de données DuckDB, vous pouvez la charger dans un script 
 import duckdb
 
 # Connexion à la base de données
-conn = duckdb.connect('public/ngeo<millésime du COG>.duckdb')
+conn = duckdb.connect('public/ngeo2024.duckdb')
 
 # Exemple de requête
 result = conn.execute("SELECT * FROM ngeofr LIMIT 10").fetchall()
@@ -51,18 +48,16 @@ Les données sont également disponibles au format Parquet pour une intégration
 import pandas as pd
 
 # Charger les données Parquet
-df = pd.read_parquet('public/ngeo<millésime du COG>.parquet')
+df = pd.read_parquet('public/ngeo2024.parquet')
 print(df.head())
 ```
-
-🚧 En cours de rédaction...
 
 ## Structure du projet
 ```
 ngeofr/
 ├── public/                       # Données publiques pour les utilisateurs finaux
-│   ├── ngeo20XX.duckdb           # Base de données principale (DuckDB)
-│   └── ngeo20XX.parquet          # Export de la base (format Parquet)
+│   ├── ngeo2024.duckdb           # Base de données principale (DuckDB)
+│   └── ngeo2024.parquet          # Export de la base (format Parquet)
 ├── src/                          # Code source du projet
 │   │── data/                     # Données intermédiaires (Parquet)
 │   │── db/                       # Scripts et configs de la base de données
@@ -81,6 +76,12 @@ ngeofr/
 
 ## Base de données
 Le projet produit une base de données DuckDB, structurée autour de la table `ngeofr`. Cette table centralise les données géographiques à différents niveaux (communes, régions, départements, EPCI, etc.) pour faciliter les requêtes et les analyses.
+
+### Formats de données disponibles
+Les données du projet **ngeofr** sont disponibles dans les formats suivants :
+
+![DuckDB](https://img.shields.io/badge/DuckDB-%E2%9C%94-blue)  
+![Apache Parquet](https://img.shields.io/badge/Apache%20Parquet-%E2%9C%94-blue)
 
 ### Structure de la table `ngeofr`
 La table `ngeofr` est divisée en sous-sections pour plus de clarté. Voici les champs principaux :
@@ -143,9 +144,10 @@ Les données sont validées à l'aide de tests automatisés dans `src/shared/dat
 
 ## Sources utilisées
 
-### Données externes
-- **Insee** : Institut national de la statistique et des études économiques. Données démographiques et géographiques. [🔗 Site officiel](https://www.insee.fr/)
 
-- **Banatic** : Base nationale sur l'intercommunalité. Informations sur les EPCI. [🔗 Site officiel](https://www.banatic.interieur.gouv.fr/)
+[![Source INSEE](https://img.shields.io/badge/Source-INSEE-blue)](https://www.insee.fr/)
+[![Source Banatic](https://img.shields.io/badge/Source-Banatic-blue)](https://www.banatic.interieur.gouv.fr/)
+[![Source dataNOVA](https://img.shields.io/badge/Source-dataNOVA-blue)](https://datanova.laposte.fr/)
 
-- **dataNOVA** : Portail de données ouvertes de La Poste Groupe. Données sur les codes postaux. [🔗 Site officiel](https://datanova.laposte.fr/)
+## Licence
+Ce projet est sous licence MIT - voir le fichier [LICENSE](./LICENSE) pour plus de détails
