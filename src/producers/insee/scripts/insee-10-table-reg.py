@@ -3,7 +3,7 @@ import pandas as pd
 from src._shared.data_validation import test_length_values, test_no_null_values
 
 # ---- 2 Chargement des données ----
-df_init = pd.read_csv("src/producers/insee/assets/v_region_2024.csv", encoding="UTF-8", na_values="")
+df_init = pd.read_csv("src/producers/insee/assets/v_region_2025.csv", encoding="UTF-8", na_values="")
 
 # ---- 3 Transformation et nettoyage ----
 df = (df_init

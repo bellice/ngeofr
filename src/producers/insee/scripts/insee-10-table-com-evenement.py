@@ -1,10 +1,10 @@
 # ---- 1 Importation des bibliothèques ----
 import pandas as pd
 import numpy as np
-from src._shared.data_validation import test_length_values, test_no_null_values, test_date_format
+from src.shared.data_validation import test_length_values, test_no_null_values, test_date_format
 
 # ---- 2 Chargement des données ----
-df_init = pd.read_csv("src/producers/insee/assets/v_mvt_commune_2024.csv", encoding="UTF-8", na_values="")
+df_init = pd.read_csv("src/producers/insee/assets/v_mvt_commune_2025.csv", encoding="UTF-8", na_values="")
 
 # Création du DataFrame pour les communes manquantes
 datecom_manquant_init = [
@@ -17,7 +17,6 @@ datecom_manquant_init = [
     ("98612", "Sigave", "2008-01-01", None),
     ("98613", "Uvea", "2008-01-01", None),
     ("98901", "Île de Clipperton", "2008-01-01", None)
-   
 ]
 
 datecom_manquant = (
@@ -66,7 +65,7 @@ df = (df_init
             com_nom_ap=lambda df: df["com_nom_ap"].str.replace(r"\s*\([^)]*\)", "", regex=True),
             date=lambda df: pd.to_datetime(df["date"], format="%Y-%m-%d")))
 
-df.loc[df["com_nom_av"].str.contains("\(")]
+df.loc[df["com_nom_av"].str.contains(r"\(")]
 
 # Mapping des codes d'événements aux types d'événements spatiaux
 event_spatial_map = {

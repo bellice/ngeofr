@@ -43,7 +43,8 @@ df = (df_init
                  .assign(date_debut=lambda df: pd.to_datetime(df["date_debut"], format = "%Y-%m-%d"),
                          date_fin=lambda df: pd.to_datetime(df["date_fin"], format = "%Y-%m-%d")))
 
-df.loc[df["com_nom"].str.contains("\(")]
+df.loc[df["com_nom"].str.contains(r"\(")]
+
 
 # ---- 4 Test d'intégrité -----
 try:

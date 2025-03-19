@@ -8,14 +8,6 @@ import re
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
 
-
-# Lien https://www.banatic.interieur.gouv.fr/api/export/pregenere/telecharger/01
-# 01 est le code de la région
-
-# https://www.banatic.interieur.gouv.fr/api/export/pregenere/telecharger/France
-
-
-
 def extract_department_and_date(url):
     """
     Extrait le département et la date de l'URL.
