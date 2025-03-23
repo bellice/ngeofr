@@ -3,52 +3,25 @@ import pandas as pd
 import os
 import glob
 import re
-from src.shared.data_validation import test_length_values, test_no_null_values
+from src._shared.data_validation import test_length_values, test_no_null_values
 
 # ---- 2 Chargement des données ----
 
 # Chemin vers le dossier
 path = "src/producers/banatic/assets/"
 
-# Nom du fichier à lire
-file_name = "Périmètre_des_groupements_en_2025.csv"
+# Lister tous les fichiers CSV et les filtrer selon le pattern
+pattern = re.compile(r'^D[0-9A-Z]{2,3}-2024-01-01-perimetre-groupement\.csv$')
+files_filtered = [
+    f for f in glob.glob(os.path.join(path, "*.csv")) 
+    if pattern.search(os.path.basename(f))
+]
 
-# Chemin complet du fichier
-file_path = os.path.join(path, file_name)
-
-import csv
-
-# Liste pour stocker les lignes corrigées
-corrected_lines = []
-
-# Ouvrir le fichier avec le module csv
-with open(file_path, 'r', encoding='ISO-8859-1') as file:
-    reader = csv.reader(file, delimiter=';')
-    for row in reader:
-        if len(row) == 33:  # 33 colonnes attendues
-            corrected_lines.append(row)
-        else:
-            # Corriger la ligne
-            if len(row) > 33:
-                corrected_row = row[:32] + [';'.join(row[32:])]
-            else:
-                corrected_row = row + [''] * (33 - len(row))
-            corrected_lines.append(corrected_row)
-
-# Convertir en DataFrame
-df_init = pd.DataFrame(corrected_lines, columns=corrected_lines[0])
-df_init = df_init[1:]  # Supprimer la première ligne (en-têtes)
-
-
-# Chemin de sortie pour le fichier CSV
-output_path = "src/producers/banatic/assets/exported_file.csv"
-# Exporter le DataFrame en CSV
-df_init.to_csv(output_path, sep=";", encoding="utf-8", index=False)
-
-##################
-# Fichier inexploitable 
-##################
-
+# Lire et combiner les fichiers CSV en un seul DataFrame
+df_init = pd.concat(
+    (pd.read_table(f, sep='\t', index_col=0) for f in files_filtered),
+    ignore_index=False
+).reset_index()
 
 # ---- 3 Transformation et nettoyage ----
 

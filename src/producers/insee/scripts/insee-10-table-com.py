@@ -1,12 +1,14 @@
 # ---- 1 Importation des bibliothèques ----
 import pandas as pd
 import numpy as np
-from src._shared.data_validation import test_length_values, test_no_null_values
+from src.shared.data_validation import test_length_values, test_no_null_values
 
 # ---- 2 Chargement des données ----
 df_init = pd.read_csv("src/producers/insee/assets/v_commune_2025.csv", encoding="UTF-8", na_values="")
 
 # ---- 3 Transformation et nettoyage ----
+
+# Commune
 df = (df_init
       .rename(columns={
          "TYPECOM": "com_type",
@@ -25,11 +27,28 @@ df = (df_init
          com_parent=lambda df: df["com_parent"].apply(lambda x: str(int(x)).zfill(5) if pd.notnull(x) else None),
          )
       .drop(columns=["CTCD", "TNCC", "NCC", "NCCENR", "CAN"])
-      .sort_values(by=['com_insee']))
+      .sort_values(by=["com_insee"]))
 
 df.loc[df["com_nom"].str.contains(r"\(")]
 
 df.head()
+
+# Créer un DataFrame de référence pour les communes de type "COM"
+df_reference = df[df["com_type"] == "COM"][["com_insee", "reg_insee", "dep_insee", "arr_insee"]]
+
+# Effectuer une jointure gauche pour remplir les champs manquants sur "COMA" et "COMD"
+df = df.merge(df_reference, how="left", left_on="com_parent", right_on="com_insee", suffixes=('', '_ref'))
+
+# Remplir les champs manquants
+df["reg_insee"] = df["reg_insee"].fillna(df["reg_insee_ref"])
+df["dep_insee"] = df["dep_insee"].fillna(df["dep_insee_ref"])
+df["arr_insee"] = df["arr_insee"].fillna(df["arr_insee_ref"])
+
+# Supprimer les colonnes de référence ajoutées lors de la jointure
+df = df.drop(columns=["reg_insee_ref", "dep_insee_ref", "arr_insee_ref", "com_insee_ref"])
+
+df.head()
+
 
 # ---- 4 Test d'intégrité -----
 try:
