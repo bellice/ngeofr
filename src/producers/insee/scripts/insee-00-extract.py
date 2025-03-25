@@ -170,7 +170,8 @@ urls_patterns_suffixes = [
     ("https://www.insee.fr/fr/statistiques/5392492", r"\.xlsx$", "_fr-wf"),
     ("https://www.insee.fr/fr/information/7671867", r"\.zip$", ""),
     ("https://www.insee.fr/fr/information/7671844", r"\.zip$", ""),
-    ("https://www.insee.fr/fr/information/2549968", r"\.(xls|xlsx)$", "")
+    ("https://www.insee.fr/fr/information/2549968", r"\.(xls|xlsx)$", ""),
+    ("https://www.insee.fr/fr/information/2510634", r"\.zip$", "")
 ]
 
 

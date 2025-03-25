@@ -34,11 +34,11 @@ parquet_files = {
         "columns": ["com_insee", "com_siren", "com_nom"]
     },
     "table_epci_perimetre": {
-        "path": "src/data/banatic/table_epci_perimetre.parquet",
+        "path": "src/data/insee/table_epci_perimetre.parquet",
         "columns": ["epci_membre_siren", "epci_siren", "epci_nom", "epci_cheflieu", "epci_interdep", "epci_naturejuridique"]
     },
     "table_ept_perimetre": {
-        "path": "src/data/banatic/table_ept_perimetre.parquet",
+        "path": "src/data/insee/table_ept_perimetre.parquet",
         "columns": ["ept_membre_siren", "ept_siren", "ept_nom", "ept_cheflieu", "ept_naturejuridique"]
     },
     "table_population": {
@@ -47,7 +47,7 @@ parquet_files = {
     }
 }
 
-# Créer des vues temporaires pour chaque fichier Parquet
+# Créer des vues temporaires avec des valeurs NULL pour les colonnes manquantes
 for table_name, config in parquet_files.items():
     file_path = config["path"]
     columns = config["columns"]
