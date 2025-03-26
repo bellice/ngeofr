@@ -11,42 +11,13 @@ from src.shared.data_validation import test_length_values, test_no_null_values
 path = "src/producers/banatic/assets/"
 
 # Nom du fichier à lire
-file_name = "Périmètre_des_groupements_en_2025.csv"
+file_name = "Périmètre_des_groupements_en_2025.xlsx"
 
 # Chemin complet du fichier
 file_path = os.path.join(path, file_name)
 
-import csv
-
-# Liste pour stocker les lignes corrigées
-corrected_lines = []
-
-# Ouvrir le fichier avec le module csv
-with open(file_path, 'r', encoding='ISO-8859-1') as file:
-    reader = csv.reader(file, delimiter=';')
-    for row in reader:
-        if len(row) == 33:  # 33 colonnes attendues
-            corrected_lines.append(row)
-        else:
-            # Corriger la ligne
-            if len(row) > 33:
-                corrected_row = row[:32] + [';'.join(row[32:])]
-            else:
-                corrected_row = row + [''] * (33 - len(row))
-            corrected_lines.append(corrected_row)
-
 # Convertir en DataFrame
-df_init = pd.DataFrame(corrected_lines, columns=corrected_lines[0])
-df_init = df_init[1:]  # Supprimer la première ligne (en-têtes)
-
-
-# Chemin de sortie pour le fichier CSV
-output_path = "src/producers/banatic/assets/exported_file.csv"
-# Exporter le DataFrame en CSV
-df_init.to_csv(output_path, sep=";", encoding="utf-8", index=False)
-
-##################
-# Fichier inexploitable 
+df_init = pd.read_excel(file_path)
 ##################
 
 
@@ -54,35 +25,33 @@ df_init.to_csv(output_path, sep=";", encoding="utf-8", index=False)
 
 df = (
     df_init
-    .assign(
-        grpt_cheflieu_reg=lambda x: x['Région siège'].str.split(' - ', expand=True)[0],
-        grpt_cheflieu_dep=lambda x: x['Département siège'].str.split(' - ', expand=True)[0],
-        grpt_cheflieu_com=lambda x: x['Commune siège'].str.split(' - ', expand=True)[0],
-    )
     .rename(columns={
          "N° SIREN": "grpt_siren",
          "Nom du groupement": "grpt_nom",
          "Nature juridique": "grpt_naturejuridique",
          "Groupement interdépartemental": "grpt_interdep",
-         "Siren membre": "grpt_membre_siren",
-         "Nom membre": "grpt_membre_nom",
-         "Type": "grpt_membre_type"})
+         "Siren du membre": "grpt_membre_siren",
+         "Nom du membre": "grpt_membre_nom",
+         "Type du membre": "grpt_membre_type",
+         "Commune siège": "grpt_cheflieu_com"})
     .pipe(lambda x: x.loc[:, x.columns.str.startswith("grpt")])
+    .dropna(subset=['grpt_membre_siren'])  # Supprime les lignes où grpt_membre_siren est NULL
     .assign(
         grpt_siren=lambda x: x["grpt_siren"].astype(str),
-        grpt_membre_siren=lambda x: x["grpt_membre_siren"].astype(str),
-        grpt_interdep=lambda x: x["grpt_interdep"].astype(int),
+        grpt_membre_siren=lambda x: x["grpt_membre_siren"].astype('int64').astype(str),
+        grpt_interdep=lambda x: x["grpt_interdep"].map({"OUI": True, "NON": False}),
         grpt_nom=lambda x: x["grpt_nom"].str.replace(r"\s{2,}", " ", regex=True)
-        )
+    )
+
 )
 
 df_epci = (
     df
-    .query("grpt_naturejuridique in ['METRO', 'CC', 'CA', 'CU', 'MET69']")
+    .query("grpt_naturejuridique in ['Communauté d\\'agglomération', 'Communauté urbaine', 'Communauté de communes', 'Métropole', 'Métropole de Lyon']")
     .rename(columns={
             "grpt_siren": "epci_siren",
             "grpt_nom": "epci_nom",
-            "grpt_cheflieu_com" :"epci_cheflieu",
+            "grpt_cheflieu_com": "epci_cheflieu",
             "grpt_naturejuridique": "epci_naturejuridique",
             "grpt_interdep": "epci_interdep",
             "grpt_membre_siren": "epci_membre_siren",
@@ -92,7 +61,7 @@ df_epci = (
 
 df_ept = (
     df
-    .query("grpt_naturejuridique in ['EPT']")
+    .query("grpt_naturejuridique in ['Etablissement public territorial']")
     .rename(columns={
             "grpt_siren": "ept_siren",
             "grpt_nom": "ept_nom",
@@ -114,24 +83,18 @@ try:
     test_no_null_values(df, "grpt_membre_siren")
     test_no_null_values(df, "grpt_membre_nom")
     test_no_null_values(df, "grpt_membre_type")
-    test_no_null_values(df, "grpt_cheflieu_reg")
-    test_no_null_values(df, "grpt_cheflieu_dep")
     test_no_null_values(df, "grpt_cheflieu_com")
     test_length_values(df, "grpt_siren", [9])
     test_length_values(df, "grpt_membre_siren", [9])
-    test_length_values(df, "grpt_interdep", [1])
-    test_length_values(df, "grpt_cheflieu_reg", [2])
-    test_length_values(df, "grpt_cheflieu_dep", [2, 3])
-    test_length_values(df, "grpt_cheflieu_com", [9])
 
     print("Tous les tests d'intégrité ont été réussis.")
 
 
 # ---- 5 Écriture au format Parquet ----
 
-    df.to_parquet("src/params/banatic/table_grpt_perimetre.parquet", engine="pyarrow", compression="gzip")
-    df_epci.to_parquet("src/params/banatic/table_epci_perimetre.parquet", engine="pyarrow", compression="gzip")
-    df_ept.to_parquet("src/params/banatic/table_ept_perimetre.parquet", engine="pyarrow", compression="gzip")
+    df.to_parquet("src/data/banatic/table_grpt_perimetre.parquet", engine="pyarrow", compression="gzip")
+    df_epci.to_parquet("src/data/banatic/table_epci_perimetre.parquet", engine="pyarrow", compression="gzip")
+    df_ept.to_parquet("src/data/banatic/table_ept_perimetre.parquet", engine="pyarrow", compression="gzip")
     print("Les fichiers ont été écrits avec succès.")
 
 
