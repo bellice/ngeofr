@@ -6,7 +6,7 @@
 ## Statut des millésimes du COG
 
 
-![COG 2025](https://img.shields.io/badge/COG%202025-🔄%20En%20cours-orange)
+![COG 2025](https://img.shields.io/badge/COG%202025-🔄%20Disponible-brightgreen)
 ![COG 2024](https://img.shields.io/badge/COG%202024-✅%20Disponible-brightgreen)
 
 ## Table des matières
