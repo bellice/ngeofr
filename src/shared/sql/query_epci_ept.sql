@@ -18,6 +18,11 @@ WITH epci_ept AS (
             WHEN ept_naturejuridique IS NOT NULL THEN ept_naturejuridique
             ELSE epci_naturejuridique
         END AS epci_naturejuridique
+        -- Remplacer epci_cheflieu par ept_cheflieu si ept_cheflieu n'est pas NULL
+        CASE
+            WHEN ept_cheflieu IS NOT NULL THEN ept_cheflieu
+            ELSE epci_cheflieu
+        END AS epci_cheflieu
     FROM
         ngeofr  -- Remplacer par le nom de ta table
 )
@@ -29,7 +34,8 @@ SELECT
     epci_nom,
     dep_insee,
     epci_interdep,
-    epci_naturejuridique
+    epci_naturejuridique,
+    epci_cheflieu
 FROM
     epci_ept
 WHERE epci_siren IS NOT NULL AND  epci_siren != '200054781'

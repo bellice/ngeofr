@@ -19,7 +19,7 @@ df = (df_init
          "DEP": "dep_insee",
          "COMPARENT": "com_parent"})
       .assign(
-         com_nom=lambda df: df["com_nom"].str.replace(r"\s*\([^)]*\)", "", regex=True),
+         com_nom=lambda df: df["com_nom"],
          com_insee=lambda df: df["com_insee"].astype(str),
          arr_insee=lambda df: np.where(pd.isnull(df["arr_insee"]), df["arr_insee"], df["arr_insee"].astype(str)),
          reg_insee=lambda df: df["reg_insee"].apply(lambda x: str(int(x)).zfill(2) if pd.notnull(x) else None),
@@ -48,7 +48,7 @@ df["arr_insee"] = df["arr_insee"].fillna(df["arr_insee_ref"])
 df = df.drop(columns=["reg_insee_ref", "dep_insee_ref", "arr_insee_ref", "com_insee_ref"])
 
 df.head()
-
+df[df['com_insee'].astype(str).isin(['58062', '58063'])]
 
 # ---- 4 Test d'intégrité -----
 try:
